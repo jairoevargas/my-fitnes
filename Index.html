@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Progreso Fitness · 50 años</title>
+<style>
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EEE9;
+    --border: #E2DDD6;
+    --text: #1A1916;
+    --muted: #7A756C;
+    --accent: #1D6A4A;
+    --accent-light: #E4F2EC;
+    --accent-mid: #2D9E72;
+    --warn: #B85C1A;
+    --warn-light: #FBF0E8;
+    --danger: #A83232;
+    --danger-light: #FAECEC;
+    --blue: #1A5FA8;
+    --blue-light: #E6F0FB;
+    --r: 10px;
+    --rs: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 17px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .logo span { font-size: 22px; }
+  .header-date { font-size: 13px; color: var(--muted); }
+
+  .nav { display: flex; gap: 4px; padding: 1rem 1.5rem 0; overflow-x: auto; }
+  .nav-btn { padding: 8px 16px; border: 1px solid var(--border); border-bottom: none; border-radius: var(--r) var(--r) 0 0; background: var(--surface2); color: var(--muted); font-size: 13px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .nav-btn.active { background: var(--surface); color: var(--text); font-weight: 600; border-color: var(--border); }
+  .nav-btn:hover:not(.active) { background: var(--surface); color: var(--text); }
+
+  .main { padding: 0 1.5rem 2rem; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1rem; }
+
+  .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+  .metric { background: var(--surface2); border-radius: var(--rs); padding: 1rem; text-align: center; }
+  .metric-val { font-size: 22px; font-weight: 700; }
+  .metric-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .metric-val.green { color: var(--accent); }
+  .metric-val.orange { color: var(--warn); }
+  .metric-val.red { color: var(--danger); }
+
+  .progress-track { margin: 1rem 0; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .bar-bg { background: var(--surface2); border-radius: 99px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+  .bar-green { background: linear-gradient(90deg, #2D9E72, #1D6A4A); }
+  .bar-orange { background: linear-gradient(90deg, #E8883A, #B85C1A); }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; margin-top: 10px; }
+  input[type=number], input[type=text], input[type=date], select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--rs);
+    font-size: 14px; background: var(--surface); color: var(--text); outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent-mid); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  .btn { display: inline-block; padding: 9px 20px; border-radius: var(--rs); border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity .15s, transform .1s; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .88; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #F0CCCC; font-size: 12px; padding: 5px 10px; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface2); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px; text-align: left; font-weight: 600; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .empty-state { text-align: center; color: var(--muted); padding: 2rem; font-size: 13px; }
+
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: var(--accent-light); color: var(--accent); }
+  .badge-orange { background: var(--warn-light); color: var(--warn); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-red { background: var(--danger-light); color: var(--danger); }
+  .badge-gray { background: var(--surface2); color: var(--muted); }
+
+  .milestone-grid { display: grid; gap: 8px; }
+  .milestone { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surface); }
+  .milestone.done { background: var(--accent-light); border-color: #A8DCC7; }
+  .milestone.active { border-color: var(--accent-mid); border-width: 2px; }
+  .milestone-week { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .mw-done { background: var(--accent); color: #fff; }
+  .mw-active { background: var(--accent-mid); color: #fff; }
+  .mw-future { background: var(--surface2); color: var(--muted); }
+  .milestone-body { flex: 1; }
+  .milestone-title { font-size: 14px; font-weight: 600; }
+  .milestone-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .milestone-targets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+  .calc-result { background: var(--accent-light); border-radius: var(--rs); padding: 1rem 1.25rem; margin-top: 1rem; border: 1px solid #A8DCC7; }
+  .calc-result-main { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .calc-result-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .calc-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .calc-mini { background: var(--surface); border-radius: var(--rs); padding: 8px 12px; border: 1px solid var(--border); }
+  .calc-mini-val { font-weight: 700; font-size: 16px; }
+  .calc-mini-lbl { font-size: 11px; color: var(--muted); }
+
+  .chart-wrap { position: relative; height: 200px; margin-top: 1rem; }
+  svg.chart { width: 100%; height: 100%; overflow: visible; }
+
+  .week-check-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 8px 0; }
+  .day-box { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); transition: all .15s; user-select: none; }
+  .day-box.train { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .day-box.rest { background: var(--surface2); }
+
+  .alert { padding: 10px 14px; border-radius: var(--rs); font-size: 13px; margin-bottom: 10px; }
+  .alert-green { background: var(--accent-light); color: var(--accent); border: 1px solid #A8DCC7; }
+  .alert-orange { background: var(--warn-light); color: var(--warn); border: 1px solid #F0C4A0; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  .plank-display { font-size: 48px; font-weight: 800; color: var(--accent); text-align: center; padding: 1rem; letter-spacing: -1px; }
+  .plank-hist { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .plank-item { background: var(--surface2); border-radius: var(--rs); padding: 5px 10px; font-size: 12px; }
+  .plank-item span { font-weight: 700; color: var(--accent); }
+
+  @media (max-width: 520px) {
+    .form-row, .form-row3 { grid-template-columns: 1fr; }
+    .metric-row { grid-template-columns: 1fr 1fr; }
+    .calc-result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>💪</span> Mi Progreso Fitness</div>
+  <div class="header-date" id="hdate"></div>
+</header>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPane('dashboard')">Dashboard</button>
+  <button class="nav-btn" onclick="showPane('registro')">Registrar sesión</button>
+  <button class="nav-btn" onclick="showPane('peso')">Peso & grasa</button>
+  <button class="nav-btn" onclick="showPane('hitos')">Hitos semanales</button>
+  <button class="nav-btn" onclick="showPane('calculadora')">Calculadoras</button>
+  <button class="nav-btn" onclick="showPane('historial')">Historial</button>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="pane active" id="pane-dashboard">
+  <div style="height:12px"></div>
+  <div class="metric-row" id="dash-metrics"></div>
+
+  <div class="card">
+    <div class="card-title">Progreso hacia la meta</div>
+    <div class="progress-track">
+      <div class="progress-label"><span>Pérdida de peso</span><span id="prog-peso-lbl">—</span></div>
+      <div class="bar-bg"><div class="bar-fill bar-green" id="prog-peso" style="width:0%"></div></div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-label"><span>Sesiones completadas (meta: 4/sem)</span><span id="prog-ses-lbl">—</span></div>
+      <div class="bar-bg"><div class="bar-fill bar-orange" id="prog-ses" style="width:0%"></div></div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-label"><span>Semanas activas</span><span id="prog-sem-lbl">—</span></div>
+      <div class="bar-bg"><div class="bar-fill bar-green" id="prog-sem" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Curva de peso (últimos registros)</div>
+    <div class="chart-wrap" id="chart-wrap">
+      <div class="empty-state">Aún no hay registros de peso.<br>Ve a "Peso & grasa" para añadir el primero.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Plancha — record personal</div>
+    <div class="plank-display" id="plank-record">—</div>
+    <div class="plank-hist" id="plank-hist"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Últimas 3 sesiones</div>
+    <div id="dash-sessions"></div>
+  </div>
+</div>
+
+<!-- REGISTRO SESIÓN -->
+<div class="pane" id="pane-registro">
+  <div style="height:12px"></div>
+  <div class="card">
+    <div class="card-title">Nueva sesión de entrenamiento</div>
+    <div class="form-row">
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="ses-fecha">
+      </div>
+      <div>
+        <label>Día de rutina</label>
+        <select id="ses-dia">
+          <option value="">Selecciona...</option>
+          <option>Día 1 · Core + Pecho</option>
+          <option>Día 2 · Espalda + Core</option>
+          <option>Día 3 · Pecho + Hombros</option>
+          <option>Día 4 · Full Upper</option>
+          <option>Cardio libre</option>
+          <option>Descanso activo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Duración (minutos)</label>
+        <input type="number" id="ses-dur" placeholder="28" min="1" max="120">
+      </div>
+      <div>
+        <label>Esfuerzo percibido (1–10)</label>
+        <select id="ses-rpe">
+          <option value="">—</option>
+          <option>3 · Fácil</option>
+          <option>5 · Moderado</option>
+          <option>7 · Difícil</option>
+          <option>8 · Muy difícil</option>
+          <option>9 · Máximo</option>
+        </select>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="card-title">Plancha (récord del día)</div>
+    <div class="form-row">
+      <div>
+        <label>Tiempo plancha frontal (segundos)</label>
+        <input type="number" id="ses-plancha" placeholder="30" min="0" max="600">
+      </div>
+      <div>
+        <label>Flexiones completas (reps)</label>
+        <input type="number" id="ses-flex" placeholder="0" min="0">
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="card-title">Notas de la sesión</div>
+    <label>¿Qué fue bien? ¿Qué mejorar?</label>
+    <textarea id="ses-notas" placeholder="Ej: logré mantener la plancha 35 seg, las flexiones completas se siguen sintiendo difíciles..."></textarea>
+    <div style="margin-top:1rem; display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="guardarSesion()">Guardar sesión</button>
+      <button class="btn btn-secondary" onclick="limpiarFormSesion()">Limpiar</button>
+    </div>
+    <div id="ses-feedback" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- PESO & GRASA -->
+<div class="pane" id="pane-peso">
+  <div style="height:12px"></div>
+  <div class="card">
+    <div class="card-title">Registrar medición</div>
+    <div class="form-row3">
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="med-fecha">
+      </div>
+      <div>
+        <label>Peso (kg)</label>
+        <input type="number" id="med-peso" placeholder="70.0" step="0.1" min="30" max="200">
+      </div>
+      <div>
+        <label>% Grasa (opcional)</label>
+        <input type="number" id="med-grasa" placeholder="22.0" step="0.1" min="3" max="60">
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Cintura (cm, opcional)</label>
+        <input type="number" id="med-cintura" placeholder="90" step="0.5">
+      </div>
+      <div>
+        <label>Estado de ánimo / energía</label>
+        <select id="med-animo">
+          <option value="">—</option>
+          <option>😴 Con poca energía</option>
+          <option>😐 Normal</option>
+          <option>😊 Bien</option>
+          <option>🔥 Con mucha energía</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-primary" onclick="guardarMedicion()">Guardar medición</button>
+    </div>
+    <div id="med-feedback" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Historial de peso</div>
+    <div id="tabla-peso"></div>
+  </div>
+</div>
+
+<!-- HITOS SEMANALES -->
+<div class="pane" id="pane-hitos">
+  <div style="height:12px"></div>
+  <div class="card">
+    <div class="card-title">Hoja de ruta — 16 semanas</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Inicio: <strong id="inicio-programa">no definido</strong> · Semana actual: <strong id="semana-actual">—</strong></p>
+    <div class="milestone-grid" id="milestone-grid"></div>
+  </div>
+</div>
+
+<!-- CALCULADORAS -->
+<div class="pane" id="pane-calculadora">
+  <div style="height:12px"></div>
+
+  <div class="card">
+    <div class="card-title">Calculadora de IMC y peso ideal</div>
+    <div class="form-row">
+      <div><label>Peso actual (kg)</label><input type="number" id="c-peso" value="70" step="0.1"></div>
+      <div><label>Estatura (cm)</label><input type="number" id="c-talla" value="158"></div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-primary btn-sm" onclick="calcIMC()">Calcular</button>
+    </div>
+    <div id="res-imc" style="display:none" class="calc-result">
+      <div class="calc-result-main" id="imc-val"></div>
+      <div class="calc-result-sub" id="imc-cat"></div>
+      <div class="calc-result-grid">
+        <div class="calc-mini"><div class="calc-mini-val" id="imc-ideal"></div><div class="calc-mini-lbl">Peso ideal (IMC 23)</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="imc-perder"></div><div class="calc-mini-lbl">A perder para llegar</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="imc-grasa"></div><div class="calc-mini-lbl">Grasa est. (hombre 50a)</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="imc-magro"></div><div class="calc-mini-lbl">Masa magra estimada</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Calculadora de calorías (TDEE)</div>
+    <div class="form-row">
+      <div><label>Peso (kg)</label><input type="number" id="t-peso" value="70" step="0.1"></div>
+      <div><label>Estatura (cm)</label><input type="number" id="t-talla" value="158"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Edad</label><input type="number" id="t-edad" value="50"></div>
+      <div>
+        <label>Nivel de actividad</label>
+        <select id="t-act">
+          <option value="1.2">Sedentario (sin ejercicio)</option>
+          <option value="1.375" selected>Ligero (3 días/sem)</option>
+          <option value="1.55">Moderado (4–5 días/sem)</option>
+          <option value="1.725">Intenso (6–7 días/sem)</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-primary btn-sm" onclick="calcTDEE()">Calcular calorías</button>
+    </div>
+    <div id="res-tdee" style="display:none" class="calc-result">
+      <div class="calc-result-main" id="tdee-val"></div>
+      <div class="calc-result-sub">Calorías de mantenimiento diarias</div>
+      <div class="calc-result-grid">
+        <div class="calc-mini"><div class="calc-mini-val" id="tdee-deficit"></div><div class="calc-mini-lbl">Déficit -400 kcal (recomenado)</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="tdee-prot"></div><div class="calc-mini-lbl">Proteína diaria (1.7g/kg)</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="tdee-semanas"></div><div class="calc-mini-lbl">Semanas para meta (65kg)</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="tdee-bmr"></div><div class="calc-mini-lbl">Metabolismo basal (BMR)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Calculadora de % grasa (fórmula Navy)</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Mide con cinta métrica en la mañana, en ayunas.</p>
+    <div class="form-row">
+      <div><label>Cintura (cm) — al nivel del ombligo</label><input type="number" id="n-cintura" placeholder="90" step="0.5"></div>
+      <div><label>Cuello (cm)</label><input type="number" id="n-cuello" placeholder="38" step="0.5"></div>
+    </div>
+    <div><label>Estatura (cm)</label><input type="number" id="n-talla" value="158" step="0.5"></div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-primary btn-sm" onclick="calcNavy()">Calcular % grasa</button>
+    </div>
+    <div id="res-navy" style="display:none" class="calc-result">
+      <div class="calc-result-main" id="navy-val"></div>
+      <div class="calc-result-sub" id="navy-cat"></div>
+      <div class="calc-result-grid">
+        <div class="calc-mini"><div class="calc-mini-val" id="navy-meta">15–17%</div><div class="calc-mini-lbl">Tu meta de grasa</div></div>
+        <div class="calc-mini"><div class="calc-mini-val" id="navy-dif"></div><div class="calc-mini-lbl">Puntos a bajar</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="pane" id="pane-historial">
+  <div style="height:12px"></div>
+  <div class="card">
+    <div class="card-title">Sesiones registradas</div>
+    <div id="tabla-sesiones"></div>
+  </div>
+  <div class="card" style="margin-top:1rem;">
+    <div class="card-title">Exportar / Importar datos</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" onclick="exportarDatos()">⬇ Exportar JSON</button>
+      <label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;">
+        ⬆ Importar JSON <input type="file" accept=".json" onchange="importarDatos(this)" style="display:none">
+      </label>
+      <button class="btn btn-danger" onclick="confirmarBorrar()">🗑 Borrar todo</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ─── Storage helpers ───────────────────────────────────
+const KEYS = { sesiones: 'fit_sesiones', mediciones: 'fit_mediciones', config: 'fit_config' };
+const load = k => JSON.parse(localStorage.getItem(k) || '[]');
+const loadObj = k => JSON.parse(localStorage.getItem(k) || '{}');
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+// ─── Initial setup ─────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('hdate').textContent = new Date().toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' });
+  // set today as default for inputs
+  const hoy = new Date().toISOString().slice(0,10);
+  ['ses-fecha','med-fecha'].forEach(id => { const el = document.getElementById(id); if(el) el.value = hoy; });
+  // init start date if not set
+  const cfg = loadObj(KEYS.config);
+  if (!cfg.inicio) { cfg.inicio = hoy; save(KEYS.config, cfg); }
+  renderAll();
+  calcIMC(); calcTDEE();
+});
+
+function renderAll() { renderDashboard(); renderTablaPeso(); renderTablaSesiones(); renderHitos(); }
+
+// ─── Nav ───────────────────────────────────────────────
+function showPane(id) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pane-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'hitos') renderHitos();
+  if (id === 'historial') renderTablaSesiones();
+  if (id === 'peso') renderTablaPeso();
+}
+
+// ─── Dashboard ─────────────────────────────────────────
+function renderDashboard() {
+  const sesiones = load(KEYS.sesiones);
+  const mediciones = load(KEYS.mediciones).sort((a,b) => a.fecha.localeCompare(b.fecha));
+
+  const pesoInicial = 70.0;
+  const pesoMeta = 65.5;
+  const pesoActual = mediciones.length ? mediciones[mediciones.length-1].peso : pesoInicial;
+  const perdido = +(pesoInicial - pesoActual).toFixed(1);
+  const porPerder = +(pesoInicial - pesoMeta).toFixed(1);
+  const progPeso = Math.min(100, Math.max(0, Math.round((perdido / porPerder) * 100)));
+
+  // semanas activas (con al menos 1 sesión)
+  const semanasSet = new Set(sesiones.map(s => getWeekKey(s.fecha)));
+  const semanasActivas = semanasSet.size;
+
+  // sesiones esta semana
+  const hoy = new Date();
+  const lunes = new Date(hoy); lunes.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
+  const sesEsta = sesiones.filter(s => new Date(s.fecha) >= lunes).length;
+
+  // plancha record
+  const conPlancha = sesiones.filter(s => s.plancha > 0).sort((a,b)=>b.plancha-a.plancha);
+  const plankRecord = conPlancha.length ? conPlancha[0].plancha : null;
+
+  // metrics
+  const metrics = [
+    { val: pesoActual.toFixed(1) + ' kg', lbl: 'Peso actual', cls: pesoActual <= pesoMeta ? 'green' : 'orange' },
+    { val: perdido >= 0 ? '-' + perdido + ' kg' : '+' + Math.abs(perdido) + ' kg', lbl: 'Perdido total', cls: perdido > 0 ? 'green' : 'red' },
+    { val: sesiones.length, lbl: 'Sesiones totales', cls: 'green' },
+    { val: sesEsta + '/4', lbl: 'Sesiones esta semana', cls: sesEsta >= 4 ? 'green' : sesEsta >= 2 ? 'orange' : 'red' },
+    { val: semanasActivas, lbl: 'Semanas activas', cls: 'green' },
+    { val: plankRecord ? fmtSeg(plankRecord) : '—', lbl: 'Récord plancha', cls: 'green' },
+  ];
+  document.getElementById('dash-metrics').innerHTML = metrics.map(m =>
+    `<div class="metric"><div class="metric-val ${m.cls}">${m.val}</div><div class="metric-lbl">${m.lbl}</div></div>`
+  ).join('');
+
+  // progress bars
+  document.getElementById('prog-peso').style.width = progPeso + '%';
+  document.getElementById('prog-peso-lbl').textContent = progPeso + '% completado';
+  const progSes = Math.min(100, Math.round((sesEsta / 4) * 100));
+  document.getElementById('prog-ses').style.width = progSes + '%';
+  document.getElementById('prog-ses-lbl').textContent = sesEsta + ' de 4 sesiones';
+  const progSem = Math.min(100, Math.round((semanasActivas / 16) * 100));
+  document.getElementById('prog-sem').style.width = progSem + '%';
+  document.getElementById('prog-sem-lbl').textContent = semanasActivas + ' de 16 semanas';
+
+  // chart
+  renderChart(mediciones);
+
+  // plank
+  document.getElementById('plank-record').textContent = plankRecord ? fmtSeg(plankRecord) : '—';
+  const plankHist = sesiones.filter(s=>s.plancha>0).sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(-6);
+  document.getElementById('plank-hist').innerHTML = plankHist.map(s =>
+    `<div class="plank-item">${fmtFecha(s.fecha)}: <span>${fmtSeg(s.plancha)}</span></div>`
+  ).join('') || '<span style="color:var(--muted);font-size:13px">Registra tu primera sesión para ver el historial.</span>';
+
+  // últimas sesiones
+  const ult = sesiones.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,3);
+  document.getElementById('dash-sessions').innerHTML = ult.length ? `
+    <table><thead><tr><th>Fecha</th><th>Día</th><th>Duración</th><th>RPE</th></tr></thead><tbody>
+    ${ult.map(s => `<tr>
+      <td>${fmtFecha(s.fecha)}</td>
+      <td>${s.dia}</td>
+      <td>${s.duracion ? s.duracion + ' min' : '—'}</td>
+      <td>${s.rpe ? badgeRPE(s.rpe) : '—'}</td>
+    </tr>`).join('')}
+    </tbody></table>` : '<div class="empty-state">Aún no hay sesiones. Ve a "Registrar sesión" para empezar.</div>';
+}
+
+function renderChart(mediciones) {
+  const wrap = document.getElementById('chart-wrap');
+  if (!mediciones.length) { wrap.innerHTML = '<div class="empty-state">Aún no hay registros de peso.<br>Ve a "Peso & grasa" para añadir el primero.</div>'; return; }
+  const pesoInicial = 70.0, pesoMeta = 65.5;
+  const datos = mediciones.slice(-12);
+  const pesos = datos.map(d => d.peso);
+  const minP = Math.min(...pesos, pesoMeta) - 0.5;
+  const maxP = Math.max(...pesos, pesoInicial) + 0.5;
+  const W = 560, H = 180, PL = 40, PR = 10, PT = 10, PB = 30;
+  const iW = W - PL - PR, iH = H - PT - PB;
+  const scaleY = v => PT + iH - ((v - minP) / (maxP - minP)) * iH;
+  const scaleX = i => PL + (i / (datos.length - 1 || 1)) * iW;
+  const pts = datos.map((d,i) => `${scaleX(i)},${scaleY(d.peso)}`).join(' ');
+  const areaPath = datos.length > 1
+    ? `M${scaleX(0)},${PT+iH} ` + datos.map((d,i)=>`L${scaleX(i)},${scaleY(d.peso)}`).join(' ') + ` L${scaleX(datos.length-1)},${PT+iH} Z`
+    : '';
+  const yticks = [pesoMeta, 67, 68, 69, 70].filter(v => v >= minP && v <= maxP);
+  wrap.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1D9E72" stop-opacity=".2"/><stop offset="100%" stop-color="#1D9E72" stop-opacity="0"/></linearGradient></defs>
+    ${yticks.map(y => `
+      <line x1="${PL}" y1="${scaleY(y)}" x2="${W-PR}" y2="${scaleY(y)}" stroke="#E2DDD6" stroke-width="0.5"/>
+      <text x="${PL-4}" y="${scaleY(y)+4}" font-size="10" fill="#7A756C" text-anchor="end">${y}</text>`).join('')}
+    <line x1="${PL}" y1="${scaleY(pesoMeta)}" x2="${W-PR}" y2="${scaleY(pesoMeta)}" stroke="#1D6A4A" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="${W-PR-2}" y="${scaleY(pesoMeta)-4}" font-size="9" fill="#1D6A4A" text-anchor="end">Meta</text>
+    ${datos.length>1 ? `<path d="${areaPath}" fill="url(#g1)"/>` : ''}
+    ${datos.length>1 ? `<polyline points="${pts}" fill="none" stroke="#1D9E72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+    ${datos.map((d,i) => `
+      <circle cx="${scaleX(i)}" cy="${scaleY(d.peso)}" r="4" fill="#1D6A4A"/>
+      <text x="${scaleX(i)}" y="${H-PB+18}" font-size="9" fill="#7A756C" text-anchor="middle">${fmtFechaCorta(d.fecha)}</text>`).join('')}
+  </svg>`;
+}
+
+// ─── Sesiones ──────────────────────────────────────────
+function guardarSesion() {
+  const fecha = document.getElementById('ses-fecha').value;
+  const dia = document.getElementById('ses-dia').value;
+  if (!fecha || !dia) { showFeedback('ses-feedback','Por favor selecciona fecha y día de rutina.','orange'); return; }
+  const sesiones = load(KEYS.sesiones);
+  sesiones.push({
+    id: Date.now(),
+    fecha,
+    dia,
+    duracion: +document.getElementById('ses-dur').value || null,
+    rpe: document.getElementById('ses-rpe').value || null,
+    plancha: +document.getElementById('ses-plancha').value || 0,
+    flexiones: +document.getElementById('ses-flex').value || 0,
+    notas: document.getElementById('ses-notas').value,
+  });
+  save(KEYS.sesiones, sesiones);
+  showFeedback('ses-feedback','✓ Sesión guardada correctamente.','green');
+  limpiarFormSesion();
+  renderAll();
+}
+function limpiarFormSesion() {
+  ['ses-dur','ses-plancha','ses-flex','ses-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ses-rpe').value = '';
+  document.getElementById('ses-dia').value = '';
+}
+function eliminarSesion(id) {
+  if (!confirm('¿Eliminar esta sesión?')) return;
+  save(KEYS.sesiones, load(KEYS.sesiones).filter(s => s.id !== id));
+  renderAll();
+}
+function renderTablaSesiones() {
+  const sesiones = load(KEYS.sesiones).sort((a,b) => b.fecha.localeCompare(a.fecha));
+  document.getElementById('tabla-sesiones').innerHTML = sesiones.length ? `
+    <table><thead><tr><th>Fecha</th><th>Rutina</th><th>Min</th><th>RPE</th><th>Plancha</th><th>Flex</th><th></th></tr></thead><tbody>
+    ${sesiones.map(s => `<tr>
+      <td>${fmtFecha(s.fecha)}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.dia}</td>
+      <td>${s.duracion || '—'}</td>
+      <td>${s.rpe ? s.rpe.split('·')[0].trim() : '—'}</td>
+      <td>${s.plancha ? fmtSeg(s.plancha) : '—'}</td>
+      <td>${s.flexiones || '—'}</td>
+      <td><button class="btn btn-danger" onclick="eliminarSesion(${s.id})">✕</button></td>
+    </tr>`).join('')}
+    </tbody></table>` : '<div class="empty-state">Sin sesiones registradas aún.</div>';
+}
+
+// ─── Mediciones ────────────────────────────────────────
+function guardarMedicion() {
+  const fecha = document.getElementById('med-fecha').value;
+  const peso = parseFloat(document.getElementById('med-peso').value);
+  if (!fecha || isNaN(peso)) { showFeedback('med-feedback','Por favor ingresa fecha y peso.','orange'); return; }
+  const meds = load(KEYS.mediciones);
+  meds.push({
+    id: Date.now(), fecha, peso,
+    grasa: parseFloat(document.getElementById('med-grasa').value) || null,
+    cintura: parseFloat(document.getElementById('med-cintura').value) || null,
+    animo: document.getElementById('med-animo').value || null,
+  });
+  save(KEYS.mediciones, meds);
+  showFeedback('med-feedback','✓ Medición guardada.','green');
+  renderAll();
+}
+function eliminarMedicion(id) {
+  if (!confirm('¿Eliminar esta medición?')) return;
+  save(KEYS.mediciones, load(KEYS.mediciones).filter(m => m.id !== id));
+  renderAll();
+}
+function renderTablaPeso() {
+  const meds = load(KEYS.mediciones).sort((a,b) => b.fecha.localeCompare(a.fecha));
+  document.getElementById('tabla-peso').innerHTML = meds.length ? `
+    <table><thead><tr><th>Fecha</th><th>Peso</th><th>% Grasa</th><th>Cintura</th><th>Energía</th><th></th></tr></thead><tbody>
+    ${meds.map((m,i,arr) => {
+      const prev = arr[i+1];
+      const diff = prev ? +(m.peso - prev.peso).toFixed(1) : null;
+      const diffStr = diff !== null ? (diff > 0 ? `<span style="color:var(--warn)">+${diff}</span>` : diff < 0 ? `<span style="color:var(--accent)">${diff}</span>` : '=') : '';
+      return `<tr>
+        <td>${fmtFecha(m.fecha)}</td>
+        <td><strong>${m.peso} kg</strong> ${diffStr}</td>
+        <td>${m.grasa ? m.grasa + '%' : '—'}</td>
+        <td>${m.cintura ? m.cintura + ' cm' : '—'}</td>
+        <td>${m.animo || '—'}</td>
+        <td><button class="btn btn-danger" onclick="eliminarMedicion(${m.id})">✕</button></td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>` : '<div class="empty-state">Sin mediciones aún.</div>';
+}
+
+// ─── Hitos semanales ───────────────────────────────────
+const HITOS = [
+  { s:1, t:'Semana de arranque', d:'Establece la base. Aprende los movimientos, no te exijas demasiado.', peso:69.5, grasa:null, ses:3, plancha:20 },
+  { s:2, t:'Activación muscular', d:'El cuerpo empieza a reconocer los patrones de movimiento.', peso:69.0, grasa:null, ses:3, plancha:25 },
+  { s:3, t:'Primeros cambios', d:'Agrega 1 serie extra por ejercicio. Primera medición de cintura.', peso:68.5, grasa:21, ses:4, plancha:30 },
+  { s:4, t:'Un mes completo', d:'Revisión completa: peso, grasa, plancha. Celebra el hábito.', peso:68.0, grasa:21, ses:4, plancha:35 },
+  { s:5, t:'Subir la intensidad', d:'Aumenta repeticiones o peso de mancuernas +0.5 kg en los ejercicios que dominas.', peso:67.5, grasa:20.5, ses:4, plancha:40 },
+  { s:6, t:'Consistencia', d:'6 semanas seguidas es el punto donde el hábito se consolida neurológicamente.', peso:67.2, grasa:20, ses:4, plancha:45 },
+  { s:7, t:'Flexiones completas', d:'Intenta hacer al menos 3 flexiones completas (no en rodillas) por serie.', peso:67.0, grasa:19.5, ses:4, plancha:50 },
+  { s:8, t:'Dos meses — revisión mayor', d:'Tómate fotos comparativas. Mide cintura. Compara registros.', peso:66.7, grasa:19, ses:4, plancha:55 },
+  { s:9, t:'Fase de consolidación', d:'Los músculos del core ya deberían sentirse más firmes. Estabilidad mejorada.', peso:66.5, grasa:18.5, ses:4, plancha:60 },
+  { s:10, t:'Aumentar dificultad', d:'Flexiones con pausa de 3 seg. Plancha con elevación de brazo. Planchas laterales.', peso:66.2, grasa:18, ses:4, plancha:65 },
+  { s:11, t:'Resistencia aeróbica', d:'Considera añadir 15 min de caminata rápida o bicicleta en días de descanso.', peso:66.0, grasa:17.5, ses:4, plancha:70 },
+  { s:12, t:'Tres meses — hito principal', d:'Revisión completa. Si llegaste al 18% de grasa, estás en excelente camino.', peso:65.8, grasa:17, ses:4, plancha:75 },
+  { s:13, t:'Refinamiento', d:'Ajusta la dieta si el progreso se frenó. Introduce variaciones de los ejercicios.', peso:65.6, grasa:17, ses:4, plancha:80 },
+  { s:14, t:'Pre-meta', d:'Muy cerca. Mantén la disciplina. No subas el déficit calórico bruscamente.', peso:65.5, grasa:16.5, ses:4, plancha:85 },
+  { s:15, t:'Consolidación final', d:'Mantén los 65.5 kg. Empieza a pensar en el plan de mantenimiento.', peso:65.5, grasa:16, ses:4, plancha:90 },
+  { s:16, t:'META ALCANZADA 🎯', d:'16 semanas. Has transformado tu composición corporal y formado un hábito de vida.', peso:65.0, grasa:15.5, ses:4, plancha:95 },
+];
+
+function renderHitos() {
+  const cfg = loadObj(KEYS.config);
+  const inicio = cfg.inicio ? new Date(cfg.inicio) : new Date();
+  const hoy = new Date();
+  const diffMs = hoy - inicio;
+  const semanaN = Math.max(1, Math.min(16, Math.floor(diffMs / (7*24*3600*1000)) + 1));
+  const sesiones = load(KEYS.sesiones);
+  const mediciones = load(KEYS.mediciones).sort((a,b) => a.fecha.localeCompare(b.fecha));
+
+  document.getElementById('inicio-programa').textContent = inicio.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('semana-actual').textContent = 'Semana ' + semanaN;
+
+  document.getElementById('milestone-grid').innerHTML = HITOS.map(h => {
+    const done = semanaN > h.s;
+    const active = semanaN === h.s;
+    const cls = done ? 'done' : active ? 'active' : '';
+    const wcls = done ? 'mw-done' : active ? 'mw-active' : 'mw-future';
+    const icon = done ? '✓' : active ? '▶' : h.s;
+
+    const pesoReal = mediciones.length ? mediciones[mediciones.length-1].peso : null;
+    let pesoStat = '';
+    if (done && pesoReal) {
+      const ok = pesoReal <= h.peso;
+      pesoStat = `<span class="badge ${ok ? 'badge-green' : 'badge-orange'}" style="font-size:10px">${ok ? '✓' : '→'} Meta: ${h.peso} kg</span>`;
+    } else {
+      pesoStat = `<span class="badge badge-gray" style="font-size:10px">Meta: ${h.peso} kg</span>`;
+    }
+
+    const planchaMeta = h.plancha;
+    const plankDone = sesiones.some(s => {
+      const sw = getWeekNum(new Date(cfg.inicio), new Date(s.fecha));
+      return sw === h.s && s.plancha >= planchaMeta;
+    });
+    const plankStat = `<span class="badge ${plankDone ? 'badge-green' : 'badge-gray'}" style="font-size:10px">${plankDone ? '✓' : ''} Plancha ${planchaMeta}s</span>`;
+
+    const sesStat = `<span class="badge badge-blue" style="font-size:10px">Meta: ${h.ses} sesiones</span>`;
+    const grasaStat = h.grasa ? `<span class="badge badge-gray" style="font-size:10px">Grasa: ${h.grasa}%</span>` : '';
+
+    return `<div class="milestone ${cls}">
+      <div class="milestone-week ${wcls}">${icon}</div>
+      <div class="milestone-body">
+        <div class="milestone-title">Sem. ${h.s} · ${h.t}</div>
+        <div class="milestone-desc">${h.d}</div>
+        <div class="milestone-targets">${pesoStat}${plankStat}${sesStat}${grasaStat}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Calculadoras ──────────────────────────────────────
+function calcIMC() {
+  const p = parseFloat(document.getElementById('c-peso').value);
+  const t = parseFloat(document.getElementById('c-talla').value) / 100;
+  if (!p || !t) return;
+  const imc = +(p / (t*t)).toFixed(1);
+  const cats = [[18.5,'Bajo peso'],[25,'Normal'],[30,'Sobrepeso'],[35,'Obesidad I'],[99,'Obesidad II+']];
+  const cat = cats.find(c => imc < c[0]);
+  const ideal = +(23 * t * t).toFixed(1);
+  const perder = +(p - ideal).toFixed(1);
+  // Navy-like fat estimate for 50-year-old man
+  const grasa = Math.round(1.2 * imc + 0.23 * 50 - 16.2);
+  const magro = +(p * (1 - grasa/100)).toFixed(1);
+  document.getElementById('imc-val').textContent = 'IMC ' + imc;
+  document.getElementById('imc-cat').textContent = cat ? cat[1] : '';
+  document.getElementById('imc-ideal').textContent = ideal + ' kg';
+  document.getElementById('imc-perder').textContent = perder > 0 ? '-' + perder + ' kg' : 'Ya en rango';
+  document.getElementById('imc-grasa').textContent = '~' + grasa + '%';
+  document.getElementById('imc-magro').textContent = magro + ' kg';
+  document.getElementById('res-imc').style.display = 'block';
+}
+function calcTDEE() {
+  const p = parseFloat(document.getElementById('t-peso').value);
+  const t = parseFloat(document.getElementById('t-talla').value);
+  const e = parseFloat(document.getElementById('t-edad').value);
+  const act = parseFloat(document.getElementById('t-act').value);
+  if (!p || !t || !e) return;
+  const bmr = Math.round(10*p + 6.25*t - 5*e + 5);
+  const tdee = Math.round(bmr * act);
+  const deficit = tdee - 400;
+  const prot = Math.round(p * 1.7);
+  const semanas = Math.ceil(((p - 65) * 7700) / (400 * 7));
+  document.getElementById('tdee-val').textContent = tdee + ' kcal/día';
+  document.getElementById('tdee-deficit').textContent = deficit + ' kcal';
+  document.getElementById('tdee-prot').textContent = prot + 'g / día';
+  document.getElementById('tdee-semanas').textContent = semanas > 0 ? '~' + semanas + ' semanas' : 'Ya en meta';
+  document.getElementById('tdee-bmr').textContent = bmr + ' kcal';
+  document.getElementById('res-tdee').style.display = 'block';
+}
+function calcNavy() {
+  const c = parseFloat(document.getElementById('n-cintura').value);
+  const n = parseFloat(document.getElementById('n-cuello').value);
+  const t = parseFloat(document.getElementById('n-talla').value);
+  if (!c || !n || !t) { alert('Completa todos los campos.'); return; }
+  const grasa = +(86.01 * Math.log10(c - n) - 70.041 * Math.log10(t) + 36.76).toFixed(1);
+  const meta = 16;
+  const dif = +(grasa - meta).toFixed(1);
+  const cats = [[6,'Esencial'],[14,'Atlético'],[18,'En forma'],[25,'Aceptable'],[99,'Sobrepeso']];
+  const cat = cats.find(c => grasa < c[0]);
+  document.getElementById('navy-val').textContent = grasa + '% grasa';
+  document.getElementById('navy-cat').textContent = cat ? cat[1] : 'Sobrepeso';
+  document.getElementById('navy-dif').textContent = dif > 0 ? '-' + dif + ' puntos' : 'En meta 🎯';
+  document.getElementById('res-navy').style.display = 'block';
+}
+
+// ─── Export/Import ─────────────────────────────────────
+function exportarDatos() {
+  const data = { sesiones: load(KEYS.sesiones), mediciones: load(KEYS.mediciones), config: loadObj(KEYS.config) };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'mi_progreso_fitness_' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+}
+function importarDatos(input) {
+  const f = input.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d.sesiones) save(KEYS.sesiones, d.sesiones);
+      if (d.mediciones) save(KEYS.mediciones, d.mediciones);
+      if (d.config) save(KEYS.config, d.config);
+      alert('Datos importados correctamente.');
+      renderAll();
+    } catch { alert('Archivo inválido.'); }
+  };
+  r.readAsText(f);
+}
+function confirmarBorrar() {
+  if (confirm('¿Borrar TODOS los datos? Esta acción no se puede deshacer.')) {
+    [KEYS.sesiones, KEYS.mediciones].forEach(k => localStorage.removeItem(k));
+    renderAll(); alert('Datos eliminados.');
+  }
+}
+
+// ─── Helpers ───────────────────────────────────────────
+function fmtFecha(iso) { return new Date(iso + 'T12:00').toLocaleDateString('es-CO', { day:'numeric', month:'short' }); }
+function fmtFechaCorta(iso) { const d = new Date(iso+'T12:00'); return (d.getDate()) + '/' + (d.getMonth()+1); }
+function fmtSeg(s) { const m = Math.floor(s/60); return m > 0 ? m + 'm ' + (s%60) + 's' : s + 's'; }
+function getWeekKey(iso) { const d = new Date(iso+'T12:00'); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); return d.toISOString().slice(0,10); }
+function getWeekNum(inicio, fecha) { return Math.floor((fecha - inicio) / (7*24*3600*1000)) + 1; }
+function badgeRPE(rpe) {
+  const n = parseInt(rpe); const cls = n <= 4 ? 'badge-blue' : n <= 6 ? 'badge-green' : n <= 8 ? 'badge-orange' : 'badge-red';
+  return `<span class="badge ${cls}">${rpe}</span>`;
+}
+function showFeedback(id, msg, type) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
+}
+</script>
+</body>
+</html>
